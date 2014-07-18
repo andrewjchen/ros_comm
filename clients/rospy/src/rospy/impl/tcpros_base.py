@@ -460,6 +460,9 @@ class TCPROSTransport(Transport):
         # without knowing the actual field name
         self.md5sum = None
         self.type = None 
+        # TODO(chenjandrew@gmail.com) this is a hack!
+        self.receiving=True
+        self.receiving_once=False
             
     def fileno(self):
         """
@@ -726,9 +729,12 @@ class TCPROSTransport(Transport):
             while not self.done and not is_shutdown():
                 try:
                     if self.socket is not None:
-                        msgs = self.receive_once()
-                        if not self.done and not is_shutdown():
-                            msgs_callback(msgs)
+                        # TODO(ajc) this is a hack!
+                        if self.receiving or self.receiving_once:
+                            self.receiving_once=False
+                            msgs = self.receive_once()
+                            if not self.done and not is_shutdown():
+                                msgs_callback(msgs)
                     else:
                         self._reconnect()
 
